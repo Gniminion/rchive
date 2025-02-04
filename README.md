@@ -1,3 +1,5 @@
-Contains various statistics related coursework that utilises R.
+Contains various statistics/data visualisation related coursework.
 
-Stat 231 (Statistics) W24 - traffic stops dataset, typesetted notes
+Geog 181 (Designing Effective Maps) W24 - datasets, QGIS files, rendered maps
+Stat 230 (Probability) W24 - real world assignment
+Stat 231 (Statistics) F24 - traffic stops dataset, typesetted notes, R assignments
