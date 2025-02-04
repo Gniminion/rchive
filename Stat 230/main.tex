@@ -1,0 +1,56 @@
+\documentclass[11pt]{article}
+\textwidth 16cm 
+\textheight 21.3cm
+\evensidemargin 1mm
+\oddsidemargin 1mm
+\topmargin -2cm
+\setlength{\parskip}{1.5ex}
+\usepackage{amsfonts,amsmath,amssymb,enumerate}
+\thispagestyle{empty}
+\usepackage[top = 0.7in, bottom=0.5in, left = 1in, right = 1in]{geometry}
+
+\begin{document}
+
+\parindent=0pt
+STAT 230 --- Real World Assignment  By Mu (MingMing) Zhang / Student No. 21058539
+
+\textbf{\Large Comparing Shiny Hunting Methods in Gen 5 Pokemon Games}
+
+One of my favourite shiny Pokemon is the Dragon type Pokemon Haxorus, 
+\\evolved from Axew, introduced in generation 5 with games Pokemon Black 
+\\and White. In these games, the base shiny odds are 1 in 8192. I want to find 
+\\the fastest way to obtain at least 1 shiny Axew with a better than 80 percent 
+\\chance, taking in considerations of the time required to set up a method.
+\\
+
+\textbf{Method 1 - Wild Encounters}
+\\Suppose I shiny hunt in Mistralton Cave, the location Axew spawns in Black and White. Here, the encounter rate is 20 percent for Axew, and 80 percent for all other Pokemon. Now, assume I encounter a random Pokemon every 10 seconds. Then Axew's encounter rate would satisfy a Poisson process of $\frac {2}{10} \times 6 = 1.2$ per minute on average.
+
+Let X model the number of shiny Axews encountered after h hours, then $X \sim Poi (\frac{1.2 \times 60}{8192}h)$
+Then $P(X\geq 1)\geq 0.8 \iff P(X = 0)\leq 0.3$
+\\$\implies (e^{-\frac{72}{8192}h})\leq 0.3 
+\implies -\frac{72}{8192}h \leq ln(0.3) \implies \frac{72}{8192}h \geq ln(3.33) \implies h \geq 136.985$
+
+So it'd take at least 137 hours in this case.
+
+\textbf{Method 2 - Wild Encounters With a Shiny Charm}
+\\The Shiny Charm is a reward you get in generation 5 games for completing the national Pokedex. It boosts the shiny odds to 1 in 2370. Suppose I hunt like the scenario above but with a Shiny Charm, and let Y model the number of shiny Axews encountered after h hours in this way, then $Y \sim Poi (\frac{72}{2370}h)$. Using similar calculations, $h \geq 39.631$, implying it'd take at least 40 hours.
+
+However, obtaining the charm is a long process, requiring all 649 Pokemon in the national Pokedex. For this method to be worth it, I would need to obtain a shiny charm in less than $137 - 40 = 97$ hours which may or may not be realistic depending on my progress at the start of the hunt.
+
+\textbf{Method 3 - The Masuda Method}
+\\Unlike wild encounters, the Masuda method takes advantage of the breeding mechanic, where it involves hatching eggs from two Pokemon of two different language game versions. The shiny odds from the Masuda method are 1 in 1366.
+
+Hatching eggs takes time, and I can hatch 5 eggs at a time for a full Pokemon party. It takes 10455 in game steps to hatch an Axew egg, which translates to about 20 minutes if I take 9 in game steps per second using a bike. So, the hatching rate for Axew would satisfy a Poisson process of 5 per 20 minutes on average.
+
+Let Z model the number of shiny Axews encountered after h hours of hatching, then \\$Z \sim Poi (\frac{15}{1366}h)$. Using similar calculations, $h \geq 109.642$, implying it'd take at least 110 hours.
+
+This seems like the most balanced method assuming I had access to two Pokemon from different language version games capable of producing an Axew egg. There is also the Masuda method with a Shiny Charm which increases the odds to 1 in 1024, but that requires access to a Shiny Charm.
+\\
+
+\textbf{Conclusion}
+\\ The Masuda method seems to be the go to here with less effort needed for preperation compared to the Shiny Charm. However, the Shiny Charm is the fastest method in general given it is already obtained. With help from the Poisson distribution, I can now start my hunt for a shiny Axew!
+
+\end{document}
+
+

@@ -1,0 +1,42 @@
+Data quality notes:
+
+Digit Description
+First (0XXXX): Incomplete enumeration flag
+Second (X0XXX): Short-form data quality flag
+Third (XX0XX): Short-form income data quality flag
+Fourth (XXX0X): Not applicable
+Fifth (XXXX0): Not applicable 
+
+Flag description
+Incomplete enumeration flag
+0 = Default. Not applicable.
+1 = Incompletely enumerated Indian reserve or Indian settlement (suppressed).
+2 = Excludes census data for one or more incompletely enumerated Indian reserves or Indian settlements.
+
+Short-form data quality flag
+0 = Default. Data quality index showing a short-form global non-response rate lower than 10%.
+"1 = Data quality index showing a short-form global non-response rate higher than or equal to 10%, but lower than 20%."
+"2 = Data quality index showing a short-form global non-response rate higher than or equal to 20%, but lower than 30%."
+"3 = Data quality index showing a short-form global non-response rate higher than or equal to 30%, but lower than 40%."
+"4 = Data quality index showing a short-form global non-response rate higher than or equal to 40%, but lower than 50%."
+5 = Data quality index showing a short-form global non-response rate higher than or equal to 50% (suppressed).
+9 = Short-form data suppressed to meet the confidentiality requirements of the Statistics Act.
+
+Short-form income data quality flag
+0 = Default. Data quality index showing a short-form income non-response rate lower than 10%.
+"1 = Data quality index showing a short-form income non-response rate higher than or equal to 10%, but lower than 20%."
+"2 = Data quality index showing a short-form income non-response rate higher than or equal to 20%, but lower than 30%."
+3 = Data quality index showing a short-form income non-response rate higher than or equal to 30%.
+9 = Short-form income data suppressed to meet the confidentiality requirements of the Statistics Act.
+
+Not applicable
+0 = Default.
+
+Not applicable
+0 = Default.
+
+"Source: Statistics Canada, 2016 Census of Population."
+
+How to cite: Statistics Canada. 2017. Age and Sex Highlight Tables. 2016 Census.
+"Statistics Canada Catalogue no. 98-402-X2016002. Ottawa. Released May 3, 2017."
+http://www12.statcan.gc.ca/census-recensement/2016/dp-pd/hlt-fst/as/index-eng.cfm
