@@ -1,0 +1,105 @@
+---
+title: "Biol365 Assignment 2"
+output: pdf_document
+author: "MingMing Z. (21058539)"
+---
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(DECIPHER)
+```
+
+```{R}
+# BIOL 365 Assign2 Gene Annotation using DECIPHER
+# MingMing Z. (21058539)
+# This assignment uses DECIPHER and dependent R packages
+
+# TASK 1
+# misc. info
+R.version.string
+date()
+
+# setting up dataset path
+A2contig <- readDNAStringSet("/Users/ming/Desktop/School/BIOL 365/A2contig.fasta",format="fasta")
+
+# dataset info
+A2contig
+names(A2contig)
+```
+- Current R version is 4.2.2, current date is Feb 12, 2025
+- A2contig is sequence data with total base pair length of 27162.
+- Species name is Leptospira alexanderi, mapped using whole genome shotgun sequencing.
+
+```{r}
+# TASK 2
+orfs <- FindGenes(A2contig)
+# identifying protein-coding genes from header description:
+orfs
+# subset of open reading frames that are predicted as genes:
+genes <- orfs[orfs[, "Gene"]==1,]
+# taking a look at dna set:
+dna <- ExtractGenes(genes, A2contig)
+dna
+# finding short and long genes:
+# from dna info we can take relative parameters and find a subset 
+# of genes that may be considered short or long
+short <- which(width(dna) <= 270)
+long <- which(width(dna) >= 2550)
+dna[short]
+dna[long]
+# analysing the first three genes:
+dna[1:3, ]
+# analysing the first three protein sequences:
+aa <- ExtractGenes(genes, A2contig, type="AAStringSet")
+aa[1:3, ]
+```
+
+From analysis, we have:
+\newline 1. 31 protein coding genes are identified.
+\newline 2. Shortest gene is of length 168, longest gene is of length 2550.
+
+3. What are the start site locations and orientations for the first three genes?
+- The first gene of length 1164 has the start codon ATG, orientation is 5' to 3' (forward) since the start codon is oriented that way.
+- The second gene of length 2550 has the start GTG, orientation is 5' to 3' (forward) since the translated protein starts with Methionine, similar to the first gene, so we can infer they are the same orientation.
+- The third gene of length 792 has the start GTG, orientation is 5' to 3'(forward) with similar argument to the second gene.
+
+4. What are the corresponding protein sequences for these first three genes?
+\newline [1] MKKKILLLGSGE...AILLASKIKVD\*
+\newline [2] MALDKVTSPLSC...YYANMCTDESS\*
+\newline [3] MTLSSATKKYNG...GLDLLEDDTAD\*
+
+```{r}
+# getting the full sequence for BLAST search
+write.csv(dna[1:3, ], "~/Downloads/235a2n.csv")
+write.csv(aa[1:3, ], "~/Downloads/235a2p.csv")
+```
+The data seems to come from the organism Leptospira alexanderi, a bacteria. In particular, the BLASTn searches suggests the sequences comes from Leptospira weilii strain CUDO6 chromosome I. Possible names and functions for the 3 proteins are:
+\newline 1. BLASTn top result: CP040840.1 | BLASTp top result: WP_020985285.1 | potential protein name: formate-dependent phosphoribosylglycinamide formyltransferase | protein functions: magnesium ion binding, phosphoribosylglycinamide formyltransferase activity, ATP binding
+\newline 2. BLASTn top result: CP040840.1 | BLASTp top result: EMO61171.1 | potential protein name: glycerol-3-phosphate dehydrogenase | protein functions: respiration, glycolysis, phospholipid biosynthesis
+\newline 3. BLASTn top result: CP040840.1 | BLASTp top result: WP_020985316.1 | potential protein name: LIC13411 family adhesin | protein functions: bind cells and other host components
+
+```{r}
+# TASK 3
+# loading the bacteria model:
+data(NonCodingRNA_Bacteria)
+x <- NonCodingRNA_Bacteria
+# finding non coding genes:
+rnas <- FindNonCoding(x, A2contig)
+print(as.character(rnas))
+# finding type of non coding gene
+annotations <- attr(rnas, "annotations")
+m <- match(rnas[, "Gene"], annotations)
+table(names(annotations)[m])
+# finding sequence of non coding gene
+subseq(A2contig, start=26511, end=26583	)
+# finding overlap
+tail(orfs)
+```
+
+
+From the above R analysis, we can conclude that:
+\newline 1. The non-coding sequence begins on position and 26511 ends on position 26583, and its gene sequence is:
+\newline GCGGGCATGGTGTAATGGCTAGCACTGTAGCCTTCCAAGCTTCCAGTGAGG
+\newline GTTCGAGTCCCTCTGCCCGCAA.
+\newline 2. It seems to be a non-coding RNA, specifically of type tRNA-Gly with 73 nucleotides.
+\newline 3. We see from the output table that the gene sequences don't cover positions 26486 to 26664, so there should be no overlap with any protein-coding genes.
+
+If we do find overlap, we should consider if the overlap is the entire coverage or just a partial overlap, and check the type of genes or to determine what role they play (maybe it's complementary). Maybe in the case that overlapping regions are introns or STRs (tandem repeats where there's no particular role), then both models could be valid. We can use additional analysis with tools like BLAST to figure out which model (or both) is correct by performing database searches. We can also consider the organism this overlap is linked to and see if related species also have this overlap.

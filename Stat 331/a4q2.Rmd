@@ -1,0 +1,126 @@
+---
+title: "Assigment 4 - Question 2"
+author: "MingMing Z (21058539)"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(car)
+library(qqtest)
+```
+
+```{r}
+# set up
+load("crabs.Rda")
+```
+
+## Part a:
+
+### Part i:
+
+```{r}
+# Distinguish sex by point characters
+pch <- rep(2, times = nrow(crabs))
+pch[crabs$sex == "female"] <- 6
+# Distinguish colour of crabs
+col <- rep("orange", times = nrow(crabs))
+col[crabs$colour == "blue"] <- "blue"
+# Scatterplot
+with(crabs,
+{
+plot(width, length,
+pch = pch, col = col,
+main = "Rock crabs"
+)
+legend("topleft",
+       legend = c("male", "female"),
+pch = c(2, 6))
+legend("bottomright",
+legend = c("orange crab", "blue crab"),
+pch = 15, col = c("orange", "blue"))
+}
+)
+fit <- lm(length ~ 0 + colour:sex + colour:sex:width, data = crabs)
+summary(fit)
+
+```
+Let response variable y be length, and let x be width. Let each line have the equation of $y = \beta_a + \beta_bx$, where the beta (intercept/slope) parameters varies by the group. $\beta_a$ is not that meaningful by itself since it represents the mean length when width is zero for the group. $\beta_b$ is the mean increase of length for every 1 unit increase in width for the group.
+
+Line 1 - group of male blue crabs - $y = -0.154661 + 0.873911 x$
+\newline Line 2 - group of male orange crabs - $y = -0.023691 + 0.906521 x$
+\newline Line 3 - group of female blue crabs - $y = -0.236711 + 0.889622 x$
+\newline Line 4 - group of female orange crabs -$y = -0.109304 + 0.868646 x$
+
+### Part ii:
+
+Let's conduct hypothesis test where $H_0: \beta_{colourblue:sexfemale} = \beta_{colourorange:sexfemale} = \beta_{colourblue:sexmale} = \beta_{colourorange:sexmale} = 0$, or simply $H_0: \beta_{1} = \beta_{2} = \beta_{3} = \beta_{4} = 0$ respectively. These are all the parameters that correspond with $\beta_a$ in our group models, so this null hypothesis is basically saying all crab groups have the same mean length (=0) when width is zero. It is of interest since we can see if the base length of crab groups is significantly different. 
+
+```{r}
+# Following the same process from SAheart example
+# full model
+fit1 <- lm(length ~ 0 + colour:sex + colour:sex:width, data = crabs)
+# removing intercept terms (reduced model fit2 is nested in fit1)
+fit2 <- lm(length ~ 0 + colour:sex:width, data = crabs)
+
+# use anova() to directly compare nested models
+anova(fit2, fit1)
+```
+The resulting p value is 0.855 > 0.1, therefore the hypothesis test returns no evidence against the null hypothesis, so we can conclude the color and sex of a crab is not significant in influencing base length. 
+
+### Part iii:
+
+Instead of using nested models, can test via general linear hypothesis and building a correspond matrix:
+
+```{r}
+# Following the same process from SAheart example
+# Number of constraints
+k <- 4  
+
+# Create the A matrix
+Amat <- matrix(c(1, 0, 0, 0, 0, 0, 0, 0,  # colourblue:sexfemale
+                 0, 1, 0, 0, 0, 0, 0, 0,  # colourorange:sexfemale
+                 0, 0, 1, 0, 0, 0, 0, 0,  # colourblue:sexmale
+                 0, 0, 0, 1, 0, 0, 0, 0), # colourorange:sexmale
+                 nrow = 4, byrow = TRUE)
+
+# Create the constant vector c
+cons_vec <- c(0, 0, 0, 0)
+
+# Get the estimated coefficients
+betahat <- coef(fit)  
+betahat <- as.matrix(betahat) 
+# Get the estimated variance-covariance matrix of their estimators
+VarHat <- vcov(fit)  
+
+Matrix::rankMatrix(Amat)[1]  
+Matrix::rankMatrix(VarHat)[1]  
+
+# Calculate observed discrepancy measure
+d <- t(Amat %*% betahat - cons_vec) %*%   
+  solve(Amat %*% VarHat %*% t(Amat)) %*%  
+  (Amat %*% betahat - cons_vec) / k
+d
+
+# Calculate p-value
+pval <- 1 - pf(d, k, fit$df.residual)  
+pval
+```
+
+This returns the same p value, as expected. So another way of writing the null hypothesis is $A\theta = 0$ where the A matrix is defined above, the theta vectors represents the parameters $\beta_{1}, \beta_{2},  \beta_{3}, \beta_{4}$, and the 0 vector is the constant vector c.
+
+### Part iv
+
+Let's conduct hypothesis test where $H_0: \beta_{colourblue:sexfemale:width} = \beta_{colourorange:sexfemale:width} = 0 \land  \beta_{colourblue:sexmale:width} = \beta_{colourorange:sexmale:width} = 0$, or simply $H_0: \beta_{5} = \beta_{6} =0 \land \beta_{7} = \beta_{8} = 0$ respectively. These are all the parameters that correspond with $\beta_b$ in our group models, so this null hypothesis is basically saying the increase of width per unit change in length is the same across same sex crabs (in female crab groups and male crab groups), regardless if it's blue or orange. It is of interest since we can see if the colour of a crab is significant in how width affects carapace length. 
+
+```{r}
+# reduced model based on null hyp (sex:width instead of colour:sex:width)
+fit3 <- lm(length ~ 0 + colour:sex + sex:width, data = crabs)
+anova(fit3, fit1)
+```
+The resulting p value is 0.0004095 < 0.01, so there is strong evidence to reject the null hypothesis. We can say that width affects carapace length significantly differently based on crab colour within each sex group.
+
+## Part b.
+
+From our previous analysis, we concluded that the initial length of a crab does not depend on its colour and sex, but blue and orange crabs do have different width and length relations. "Must" is a strong word since even if there are evidence supporting that colour is a influential factor in a crab's anatomy growth (so there is evidence supporting the author's proposal), it doesn't MUST mean different colour means a separate species. Maybe an outer (confounding) factor like diet influenced both how a crab grows in length and width AND influenced the colour pigment of a crab from the same species, we can never be sure.

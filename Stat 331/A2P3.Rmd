@@ -1,0 +1,125 @@
+---
+title: "Stat 331 Assignment 2 Part 3"
+output: pdf_document
+author: MingMing Z (21058539)
+header-includes:
+   - \usepackage{amsfonts,amsmath,amssymb,enumerate}
+---
+
+```{r}
+# (a)
+load("EuroLifetimes.Rda")
+data <- EuroLifetimes
+x <- data$lifetime2019
+y <- data$lifetime2022
+plot(y ~ x, data=anscombe, main = "Life Expectancy in 2019 vs Life Expectancy in 2022", 
+     xlab = "lifetime2019", ylab = "lifetime2022", pch = 19, cex = 1.5,  
+     xlim = c(70, 90), ylim = c(70, 90), col = adjustcolor("black", 0.5))
+abline(a = 0, b = 1, col = "red", lty=2, lwd=3)
+```
+ii) The added line is of interest since it is a linear line of x = y, which describes a relationship where the values of x (lifetime2019) and y (lifetime2022) are always equally proportional (1 year increase in x means 1 year increase in y).
+
+iii) The relationship between life expectancy in 2022 and that in 2019 seem to exhibit linear behavior, with a positive correlation. The points cluster around the 80-85 range for both years, which makes sense as the generally expected life expectancy for humans. The points also seem to relatively match the added line, so this suggests that the life expectancy for these years are similar and have no significant discrepancy. We may say that life expectancy had no significant change between these years.
+
+```{r}
+# (b)
+fit1 <- lm(y ~ x, data = data)
+coef(fit1)
+
+plot(y ~ x, data=anscombe, main = "Life Expectancy in 2019 vs Life Expectancy in 2022", 
+     xlab = "lifetime2019", ylab = "lifetime2022", pch = 19, cex = 1.5,  
+     xlim = c(70, 90), ylim = c(70, 90), col = adjustcolor("black", 0.5))
+abline(a = 0, b = 1, col = "red", lty=2, lwd=3)
+abline(a = -0.959454, b = 1.006159, col = "blue", lty=1, lwd=3)
+```
+ii) The two lines are semi parallel with the blue line having a slight slant (slope is not just 1). They are relatively similar with the fitted line slightly shifted down the y axis. This implies that the life expectancy in 2019 and 2022 are still similar overall, but the expectancy in 2022 may be slightly lower than 2019 due to the health emergency or other factors. 
+
+```{r}
+# iii)
+summary(fit1)
+```
+iii) From the R output, we can see that the p-value for $H_0: {\beta}_0 = 0$ is 0.349. Since p > 0.1, there is no evidence against the null hypothesis given the observed data. And so we can say that there is no evidence to support that the mean life expectancy in 2022 is significantly different from zero when life expectancy in 2019 is zero. Or in other words the mean life expectancy in 2022 can be expected to be zero when life expectancy in 2019 is zero.
+
+iv) No, a life expectancy of zero suggests that a person dies at birth, which does not make sense for any population or time period. So testing this particular null hypothesis may not provide any insight of value in a real world context. A small value of life expectancy > 0 would make sense since there are infant deaths, but a value exactly at zero is not that interpretative.
+
+v) To test the the hypothesis that the straight line for the life expectancies is parallel to the y = x line, let's consider the slope. We know that for y = x, the slope = 1. For this straight line model, the slope is represented by ${\beta}_1$. And so, the null hypothesis is $H_0 : {\beta}_1 = 1$
+
+From the R summary output, we have $\hat{\beta}_1 = 1.00616$, and the std. error for $\hat{\beta}_1  = 0.01255$. So $d = \frac{|1.00616 - 1|}{0.01255} \approx 0.490$.
+And then we find the p value using the t distribution with 56 degrees of freedom, which I did using R:
+
+```{r}
+d <- (1.000616 - 1) / 0.01255
+pt(d, df = 56)
+```
+The resulting p value is 0.519, which is larger than 0.1, suggesting no evidence against the null hypothesis $H_0 : {\beta}_1 = 1$. This means that there is no evidence against the hypothesis that the straight line for the life expectancies is parallel to the y = x line.
+
+```{r}
+# (c)
+# reaarranging the model, we have B_0 = y - x
+temp_beta <- y - x
+fit2 <- lm(temp_beta ~ 1, data = data)
+coef(fit2)
+
+plot(y ~ x, data=anscombe, main = "Life Expectancy in 2019 vs Life Expectancy in 2022 With fit2 Line", 
+     xlab = "lifetime2019", ylab = "lifetime2022", pch = 19, cex = 1.5,  
+     xlim = c(70, 90), ylim = c(70, 90), col = adjustcolor("black", 0.5))
+abline(a = 0, b = 1, col = "red", lty=2, lwd=3)
+abline(a=-0.462069, b = 1, col="steelblue", lty=1, lwd = 3)
+```
+ii) This line looks very similar to the fitted line in (a). In fit1, $\hat{\beta_0} = -0.959454, \hat{\beta_1} = 1.006159$ while here we forced beta one to be 1 so our $\hat{\beta_0}$ accommodated that to be -0.462069, which is quite similar to the estimate in fit1. This is because adjusting the slope from 1.006159 to 1 isn't that big of a difference, and the intercept only had a slight shift up. We can see the fit2 is exactly parallel to the dashed red line compared to the fit1 line having a slight slant.
+
+```{r}
+# iii)
+summary(fit2)
+``` 
+iii) To test the the hypothesis that $H_0 : {\beta}_0 = 0$, or in the context of the data, that the mean life expectancy in 2022 is 0 when 2019 life expectancy is 0, we use a similar method as what's done in (b).
+
+From the R summary output, we have $\hat{\beta}_0 = -0.4621$, and the std. error for $\hat{\beta}_0  = 0.0504$. So $d = \frac{| -0.4621 - 0|} {0.0504}\approx 9.17$.
+And then we find the p value using the t distribution with 57 degrees of freedom, which I did using R:
+
+```{r}
+d <- abs(-0.4621) / 0.0504
+pt(d, df = 57)
+```
+
+The resulting p-value is approximately 1 (rounded by R), which is much larger than 0.1, suggesting no evidence against the null hypothesis $H_0 : {\beta}_0 = 0$. This means that there is no evidence against the hypothesis that the mean life expectancy in 2022 is 0 when 2019 life expectancy is 0 when ${\beta}_1 = 1$.
+
+```{r}
+# (d)
+
+fit3 <- lm(y ~ (x - 1), data = data) # x - 1 to remove intercept term B_0 (B_0 = 0)
+coef(fit3)
+plot(y ~ x, data=anscombe, main = "Life Expectancy in 2019 vs Life Expectancy in 2022 With fit3 Line", 
+     xlab = "lifetime2019", ylab = "lifetime2022", pch = 19, cex = 1.5,  
+     xlim = c(70, 90), ylim = c(70, 90), col = adjustcolor("black", 0.5))
+abline(a = 0, b = 1, col = "red", lty=2, lwd=3)
+abline(a = 0, b = 0.9943083, col="darkblue", lty=1, lwd = 3)
+```
+
+ii) This line looks very similar to the fitted line in (a). In fit1, $\hat{\beta_0} = -0.959454, \hat{\beta_1} = 1.006159$ while here we forced beta zero to be 0 so our $\hat{\beta_1}$ accommodated that to be 0.9943083, which is quite similar to the estimate in fit1. This is because adjusting the mean life expectancy in 2022 given the life expectancy
+in 2019 was zero (i.e. forcing the intercept term to shift to 0) does not affect the trend or slope of the line that much for our models, only just a slight shift up. It's hard to see any difference at a glance specially since out plot focuses on the relevant area over a range that doesn't show the x or y axis. 
+
+```{r}
+# iii)
+summary(fit3)
+``` 
+iii) To test the the hypothesis that $H_0 : {\beta}_1 = 1$, or in the context of the data, that the mean life expectancy in 2022 is simply proportional to 2019 life expectancy, we use a similar method as what's done previously.
+
+From the R summary output, we have $\hat{\beta}_1 = 0.9943083$, and the std. error for $\hat{\beta}_1  = 0.0006268$. So $d = \frac{| 0.9943083 - 1 |} {0.0006268}\approx 9.08$.
+And then we find the p value using the t distribution with 57 degrees of freedom, which I did using R:
+
+```{r}
+d <- abs(0.9943083 - 1) / 0.0006268
+pt(d, df = 57)
+```
+
+The resulting p-value is 2, which is much larger than 0.1, suggesting no evidence against the null hypothesis $H_0 : {\beta}_1 = 1$. This means that there is no evidence against the hypothesis that the mean life expectancy in 2022 is simply proportional to 2019 life expectancy when ${\beta}_0 = 0$.
+
+\newpage
+
+BONUS:
+To determine which fit is best, we can consider metrics like the R squared statistic and the hypothesis tests we've done. In terms of R squared, we have that 99% of variation in lifetime2022 can be explained by lifetime2019 in fit1, and ~100% of variation in lifetime2022 can be explained by lifetime2019 in fit3. R squared could not be applied to fit2 because no explanatory variable is included in the model, so 0% of the variation is explained. 
+\newline If we check the hypothesis tests, for $H_0 : {\beta}_0 = 0$, fit2 gave a higher p value than fit1, and for $H_0 : {\beta}_1 = 1$, fit3 gave a higher p value than fit1, but all tests returned the same result of no significant evidence. 
+\newline If we think in context of real life, I don't think an exact proportional life expectancy model where ${\beta}_1 = 1$ is realistic since there are too many factors that play into aging.
+\newline Since fit1 had no fixed parameters and its values are estimated directly from the data, I feel that the standard linear regression fit1 is the best fit.
+

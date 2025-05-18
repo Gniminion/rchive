@@ -1,0 +1,232 @@
+---
+title: "Assigment 4 - Question 3"
+author: "MingMing Z (21058539)"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(car)
+library(qqtest)
+```
+
+```{r}
+# set up
+crime <- read.csv("us_statewide_crime.csv")
+```
+
+## Part a:
+
+### Part i:
+
+```{r}
+fit1 <- lm (Murder.Rate~Violent.Crime.Rate, data=crime)
+summary(fit1)
+
+plot(crime$Violent.Crime.Rate, crime$Murder.Rate, 
+     xlab = "violent crime rate", ylab = "murder rate", 
+     main = "murder rate vs violent crime rate")
+# model fit line for reference
+abline(fit1, col = "red")
+```
+Looking at the fit summary, the p val for violent crime rate (<0.001) suggests very strong evidence against the null hypothesis that violent crime rate has no relation with murder rate. We can see from the output that for every 1 unit increase in the violent crime rate, the mean murder rate increases by 0.0193. The R squared suggests that 65.16% of the variation in the murder rate is explained by the violent crime rate. The F test p val suggests there is strong overall significance of the model. Overall, we can probably say there is significant relationship between violent crime rate and murder rate.
+
+Looking at the plot, most data points are clustered around the lower murder rates, but there is an obvious outlier at the 40 murder rate that could be influential on the fit and trend, which needs further investigation. Even though the scatter of the data points do somewhat show a positive relation, this can be highly skewed by the extreme outlier.
+
+### Part ii:
+```{r}
+qqtest(rstudent(fit1))
+```
+Looking at the qq plot, most of the points fall along a linear line and within the central (gray) range, suggesting normality. The left and right tails have a slight curve which may suggest some skew or a higher kurtosis from normal, and again, the outlier is concerning and may influence the normality assumption. Overall, the residuals do mostly align with a normal distribution but some extreme points, including the outlier, at the tails might have patterns against normality assumption.
+
+The mathematical form of these residual estimates are R student residuals, calculated as: $t_i = \frac{\hat{r}_i}{\sqrt{\hat{\sigma}^2_{(i)} (1 - h_{ii})}}$ In R, we use rstudent(fit), which is used in generating the qq plot above.
+
+### Part iii:
+```{r}
+# references SAheart R script:
+plot(fit1$fitted.values, sqrt(abs(rstandard(fit1))),
+     xlab = "Fitted values",
+     ylab = expression(sqrt(abs(Studentized~residuals))), 
+     main = "scale location plot of fit1",
+     pch = 19, col = adjustcolor("steelblue", alpha.f = 0.5))
+```
+Looking at the scale-location plot, the points does not seem to be randomly scattered along a horizontal line, especially since the residuals starts to have a narrower spread as it passes fitted value 10. The outlier could have a big influence here as points seems to have a spread pattern that points to the outlier. 
+
+Overall I'd say there's evidence against the assumption/hypothesis of homoscedasticity.
+
+### Part iv
+```{r}
+# references SAheart R script
+plot(fit1$fitted.values, fit1$residuals,
+     xlab = "Fitted values",
+     ylab = "Residuals",
+     main = "estimated residual plot of fit1",
+     pch = 19, col = adjustcolor("steelblue", alpha.f = 0.5))
+abline(h = 0, col = "darkorange", lwd = 2)
+```
+Looking at the estimated residual plot, the points again does not seem to be randomly scattered along a horizontal line. In fact, it seems like there is a pattern where the residuals scatter in a negative trend  as the fitted values increase. The outlier is at a similar position across all graphs, being a discrepancy from the patterns seen. 
+
+This may suggest evidence of non-linear patterns.
+
+### Part v
+```{r}
+plot(hatvalues(fit1),
+     xlab = "i",
+     ylab = "hii",
+     main = "hii vs i fot fit1",
+     pch = 19, col = adjustcolor("steelblue", alpha.f = 0.5))
+
+# hii > 2mean(h) => ith observation has high leverage and is outlier in predictors
+abline(h = 2 * mean(hatvalues(fit1)), col = "darkorange", lwd = 2) 
+```
+Obviously, the outlier previously mentioned has very high leverage, which seems to be the 9th observation (i=9). This is determined by looking at the added threshold hii > 2mean(h). All other points seems be fall under that bound but there are some observations like i=10, i=35, i=41 that have relatively higher leverage than other points.
+
+Overall, the 9th observation has the greatest potential to affect the fitted model.
+
+## Part b:
+
+### Part i: 
+
+```{r}
+crime$Murder.Log <- log(crime$Murder.Rate)
+crime$Violent.Log <- log(crime$Violent.Crime.Rate)
+
+fit2 <- lm(Murder.Log ~ Violent.Log, data = crime)
+summary(fit2)  
+
+plot(crime$Violent.Log, crime$Murder.Log, 
+     xlab = "log violent crime rate", ylab = "log murder rate", 
+     main = "transformed murder rate vs transformed violent crime rate")
+# model fit line for reference
+abline(fit2, col = "red")
+```
+Looking at the fit summary, the p val for transformed violent crime rate (<0.001) suggests very strong evidence against the null hypothesis that transformed violent crime rate has no relation with transformed murder rate. We can see from the output that for every 1 unit increase in the transformed violent crime rate, the mean transformed murder rate increases by 1.1204. The R squared suggests that 70.56% of the variation in the murder rate is explained by the violent crime rate. The F test p val suggests there is strong overall significance of the model. Overall, we can probably say there is significant relationship between transformed (log) violent crime rate and transformed (log) murder rate.
+
+Looking at the plot, most data points follow a positive trend in evidence of the fit line, with most points clustered around the ~5.0 - 7.0 log violent crime rate range. We may say the one data point > 7.0 log violent crime rate can be an outlier but compared to fit1 this is less obvious and would need some metrics to evaluate its influence. 
+
+### Part ii:
+```{r}
+qqtest(rstudent(fit2))
+```
+Looking at the qq plot, most of the points fall along a linear line and within the central (gray) range, suggesting normality. The thinner left and right tails may suggest some skew or a higher kurtosis from normal, but overall, especially compared to fit1, this fit fall more in line with the normal distribution hypothesis.  
+
+### Part iii:
+
+I found this guide which simplifies the process of generating plots using plot() function, so will be using that instead of the example code from SAheart for the rest of the analysis: https://library.virginia.edu/data/articles/diagnostic-plots
+
+```{r}
+plot(fit2, which = 3)
+```
+
+Looking at the scale-location plot, most of the points does seem to be randomly scattered along a horizontal line, however a point at fitted value 3 seems to have some influence on the spread. 
+
+Overall I'd say there's limited evidence against the assumption/hypothesis of homoscedasticity, so at least when compared to fit1, this fit has decreased evidence against homoscedasticity.
+
+### Part iv:
+
+```{r}
+plot(fit2, which = 1)
+
+```
+Looking at the estimated residual plot for fit2, the points does seem to have a consistently random scatter along the horizontal line at residual = 0, but there is a slight curvature in the reference line which may indicate slight non-linearity. However when compared to fit1, this fit matches the hypothesis of homoscedasticity and linearity much better when comparing the residual vs fitted plots. 
+
+### Part v.
+
+```{r}
+plot(hatvalues(fit2),
+     xlab = "i",
+     ylab = "hii",
+     main = "hii vs i for fit2",
+     pch = 19, col = adjustcolor("steelblue", alpha.f = 0.5))
+
+# hii > 2mean(h) => ith observation has high leverage and is outlier in predictors
+abline(h = 2 * mean(hatvalues(fit2)), col = "darkorange", lwd = 2) 
+```
+Compared to fit1, we can see there are more leverage states than the one extreme outlier identified for fit1. There is now 4 observations at i = 9, 20, 35, 46 that can be considered to have significant potential to affect the fitted model.  
+
+This might be because the log transformation have changed the spread and scale of the data, since it would compress larger values and highlight smaller values. This helps distribute influential points along observations of not just high crime rates, but low crime rate trends as well.
+
+### Part vi.
+
+The R squared statistic for fit1 is 0.6516, for fit2 is 0.7056, so like explained in part i of both fits, the % of variation in the murder rate explained by the violent crime rate is higher in fit2, therefore fit2 has the better R squared value. 
+
+This doesn't necessarily mean fit2 is a better model from R squared alone, but combining all other plot analyses, fit2 aligns better with assumptions of normality, linearity, and homoscesdecity, so I would recommend fit2, the log transformed model.
+
+## Part c.
+
+### Part i.
+```{r}
+fit3 <- lm(Violent.Log ~ Urbanization + High.School + Poverty, data = crime)
+summary(fit3)
+```
+Urbanization: The p val for this parameter <0.01, so there is strong evidence to suggest that urbanization is positively related with violent crime. We can say for every 1 unit (percentage point) increase in urbanization, the log violent crime rate increases by 0.016261 units, assuming we took all other variables into account.
+
+High.School: The p val for this > 0.5, so there is no evidence to suggest that high school graduation rate is significantly impacting violent crime rate. The interpretation for this parameter is that for every 1 unit (percentage point) increase in high school graduation rate, the log violent crime rate DECREASES by 0.01253 units, assuming we took all other variables into account. However we might want to consider excluding this parameter from the model since we there is no evidence against the null hypothesis. 
+
+Poverty: The p val for this parameter <0.01, so there is strong evidence to suggest that poverty rate is positively related with violent crime. We can say that for every 1 unit (percentage point) increase in poverty rate, the log violent crime rate increases by 0.069555 units, assuming we took all other variables into account.
+
+### Part ii.
+```{r}
+plot(fit3, which = 1)
+plot(fit3, which = 3)
+```
+Both plots show points randomly scattered along a horizontal line, which supports the hypothesis of homoscedasticity and linearity. In fact, the scale location and residual vs fitted plots for this fit yield a better spread of residuals than both fit1 and fit2, so maybe both log transforming the response and adding multiple explanatory variables made this a more viable model.
+
+### Part iii.
+```{r}
+qqtest(rstudent(fit3))
+```
+The qq plot shows points generally falling within the gray central range, and there is symmetry, supporting the normality assumption. However, the left and right extreme points may suggest that the distribution have heavy tails / high kurtosis.
+
+### Part iv.
+
+```{r}
+plot(hatvalues(fit3),
+     xlab = "i",
+     ylab = "hii",
+     main = "hii vs i for fit3",
+     pch = 19, col = adjustcolor("steelblue", alpha.f = 0.5))
+
+# hii > 2mean(h) => ith observation has high leverage and is outlier in predictors
+abline(h = 2 * mean(hatvalues(fit3)), col = "darkorange", lwd = 2) 
+```
+
+There are 5 high leverage states at i = 9, 18, 27, 32, 49 that can be considered to have significant potential to affect the fitted model. There are even more influential observations here compared to fit1 and 2.
+
+### Part v.
+```{r}
+plot(fit3, which = 4)
+# example from influence.R
+plot(cooks.distance(fit3), 
+     main = "Cook's distance",
+     pch = 19, col = adjustcolor("steelblue", 0.5))
+```
+
+The rule of thumb for cook's distance $D_i > 0.5$ implies the observation may be influential, and if $D_i > 1$ it is likely influential. However looking at the plot, no points pass this threshold, so none of the observations identified previously are influential by this rule.
+
+### Part vi.
+```{r}
+plot(rstudent(fit3),
+     ylab = "rstudent residuals",
+     xlab = "i",
+     main = "rstudent residual plot for fit3",
+     pch = 19, col = adjustcolor("steelblue", 0.5))
+# put threshold (|e_i|>3) for outliers
+abline(h = c(-3, 3), col = "darkorange")  
+
+```
+
+Looking at the R-student residual vs observation plot, we see there are 2 points that can be considered outliers ($|e_i| > 3$) at i = 2 and i = 35. This might suggest that these points are influential regardless of what the cooks distance rule stated, since on the cooks distance plot we also see these two observations as the highest.
+
+### Part vii.
+```{r}
+avPlots(fit3)
+```
+Both Urbanization and Poverty appear to have an obvious positive trend relationship with Violent.Log, which corresponds with the p value conclusions we found in part i. 
+
+High.School slight negative, almost flat trend which suggests it doesn't really contribute significantly to the model, which matches the conclusion we had with its high p value in part i. 
+
+We can see in all three plots, observation 2 and 35 are suggested high leverage points, which corresponds with what we found in part vi. 
+
+Some other possible high leverage points like 32, 9, 27 identified in part iv with hatvalues also are marked on these plots, so we might also consider those points further.

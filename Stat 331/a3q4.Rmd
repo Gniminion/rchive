@@ -1,0 +1,141 @@
+---
+title: "Assignment 3 - Question 4"
+author: "MingMing Z (21058539)"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+```
+
+```{r}
+# set up
+load("crabs.Rda")
+head(crabs)
+```
+
+## Part a:
+
+### Part i:
+
+```{r}
+boxplot(length ~ sex, main = "All crabs",
+col = c("#7CAE00", "#C77CFF"), data = crabs)
+fit1 <- lm (length ~ sex, data=crabs)
+summary(fit1)
+```
+Looking at the box plot, we see the carapace length distribution for female and male crabs is about the same, with males having a very slight longer length than females looking at the median. 
+
+The coefficient estimate sexmale (1.491) represents that on average, male crabs have carapace lengths that are 1.491mm longer than female rock crabs.
+A p value of 0.139 > 1 from the null hypothesis test on this parameter suggests there is no evidence to reject the null hypothesis that there is no significant difference in carapace length between male and female rock crabs.
+Overall, we would probably say that the difference between male and female carapace length is negligible.
+
+### Part ii:
+```{r}
+boxplot(length ~ sex, col = c("#7CAE00", "#C77CFF"),
+main = "Blue coloured crabs",
+subset = (colour == "blue"), data = crabs)
+fit1b <- lm(length ~ sex, subset = (colour == "blue"), data = crabs)
+summary(fit1b)
+```
+Looking at the box plot, we see there is a notable difference in the carapace length for female and male crabs when they are blue in color. Females have a median length of about 27mm while males have a median of about 32mm. 
+
+The coefficient estimate sexmale (3.912) represents that on average, male blue crabs have carapace lengths that are 3.912 mm longer than female blue crabs.
+Looking at the fit, a p value of 0.00408 < 0.01 from the null hypothesis test on parameter sexmale suggests there is strong evidence to reject the null hypothesis that there is no significant difference in carapace length between male and female rock crabs that are blue in color.
+Overall, we would probably say that the difference between male and female carapace length of BLUE crabs is significant.
+
+### Part iii:
+```{r}
+boxplot(length ~ sex, col = c("#7CAE00", "#C77CFF"),
+main = "Orange coloured crabs",
+subset = (colour == "orange"), data = crabs)
+fit1c <- lm(length ~ sex, subset = (colour == "orange"), data = crabs)
+summary(fit1c)
+```
+Looking at the box plot, we see the carapace length distribution for orange female and male crabs is about the same, with females having a very slight longer length than males looking at the median. 
+
+The coefficient estimate sexmale (-0.930) represents that on average, male orange crabs have carapace lengths that are 0.93mm shorter than female orange crabs.
+A p value of 0.495 > 0.1 from the null hypothesis test on sexmale suggests there is no evidence to reject the null hypothesis that there is no significant difference in carapace length between male and female rock crabs that are orange in color.
+Overall, we would probably say that the difference between male and female carapace length of ORANGE crabs is negligible.
+
+## Part b:
+
+### Part i: 
+
+```{r}
+boxplot(length ~ colour, main = "All crabs",
+col = c("blue", "orange"), data = crabs)
+fit2 <- lm (length ~ colour, data = crabs)
+summary(fit2)
+```
+Looking at the box plot, we see there is a notable difference in carapace length for blue and orange crabs, with orange crabs having a higher median (~35mm) than blue crabs (~30mm). It is interesting to note that blue crabs seem to have more of a variance in data points than orange with a larger outlier range.
+
+The coefficient estimate colourorange (4.095) represents that on average, the carapace length of orange crabs is 4.095mm longer than blue (non orange) rock crabs.
+A p value of 3.47e-05 < 0.001 from the null hypothesis test on colourorange suggests there is very strong evidence to reject the null hypothesis that there is no significant difference in carapace length between blue and orange rock crabs.
+Overall, we would probably say that the difference between orange and blue crabs is very significant.
+
+### Part ii:
+
+```{r}
+boxplot(length ~ colour,
+col = c("blue", "orange"), main = "Female crabs",
+subset = (sex == "female"), data = crabs)
+fit2b <- lm (length ~ colour, subset = (sex == "female"), data = crabs)
+summary(fit2b)
+```
+Looking at the box plot, we see there is a notable difference in carapace length for blue and orange female crabs, with orange crabs having a higher median (~35mm) than blue crabs (~27mm). Compared to the previous box plot, it seems that female crabs have even more of a discrepancy in length depending on color than overall crabs.
+
+The coefficient estimate colourorange (6.516) represents that on average, the carapace length of female orange crabs is 6.516mm longer than female blue (non orange) rock crabs.
+A p value of 2.52e-07 < 0.001 from the null hypothesis test on colourorange suggests there is very strong evidence to reject the null hypothesis that there is no significant difference in carapace length between blue and orange female rock crabs.
+Overall, we would probably say that the difference between FEMALE orange and blue crabs is very significant.
+
+### Part iii. 
+```{r}
+boxplot(length ~ colour,
+col = c("blue", "orange"), main = "Male crabs",
+subset = (sex == "male"), data = crabs)
+fit2c <- lm (length ~ colour, subset = (sex == "male"), data = crabs)
+summary(fit2c)
+```
+Looking at the box plot, we see there is a very slight difference in carapace length for blue and orange male crabs, with orange crabs having a slightly higher median than blue crabs. It seems that colour doesn't affect the length of male crabs that much, as opposed to female crabs.
+
+The coefficient estimate colourorange (1.674) represents that on average, the carapace length of male orange crabs is 1.674mm longer than male blue (non orange) rock crabs.
+A p value of 0.265 > 0.1 from the null hypothesis test on colourorange suggests there is no evidence to reject the null hypothesis that there is no significant difference in carapace length between blue and orange male rock crabs.
+Overall, we would probably say that the difference between MALE orange and blue crabs is negligible.
+
+## Part c:
+```{r}
+boxplot(length ~ sex + colour, main = "All crabs",
+col = rep(c("blue", "orange"), each = 2),
+data = crabs)
+fit3 <- lm(length ~ sex + colour, data = crabs)
+summary(fit3)
+```
+Based on the boxplot, we see orange female crabs have the highest median length (~35mm), with notable difference from blue female crabs. Males have similar lengths when comparing colour with around a median of (~33mm). Males may have a slightly higher median length than females when colours are combined.
+
+(Intercept) represents the average carapace length (29.3125mm) for female crabs that are not orange (blue). Here, the p value (2e-16 < 0.001) suggests this parameter is very significant in the fit.
+
+sexmale represents that on average, male crabs are 1.491mm longer than female crabs. However, the p value (0.123 > 0.1) suggests this difference is not that statistically significant, so we might say that sex is not a significant factor contributing to carapace length in rock crabs.
+
+colourorange represents that  on average, orange crabs are 4.095mm longer than blue crabs. The p value (3.27e-05 < 0.001) is very significant, so we might say that colour is a very significant factor contributing to carapace length in rock crabs.
+
+The fit indicates that colour is a significant factor for modelling carapace length, while sex might not be. The R squared statistic (0.094) suggests that only 9.4% of the variability in carapace length is explained by sex and colour, so we probably want to look into other factors like habitat for these crabs.
+
+### Part ii.
+```{r}
+fit3a <- lm(length ~ sex * colour, data = crabs)
+summary(fit3a)
+```
+(Intercept): the average carapace length for female crabs that are not orange (blue) slightly decreased in this model to 28.102mm.
+\newline sexmale: after accounting for colour (so for blue crabs), males have a longer carapace length than females by about 3.912mm. Here, the p value is actually small (0.0401 < 0.05) which suggests statstical significance in sex as a contributing factor once colour is accounted for.
+\newline colourorange: after accounting for sex (so for female crabs), orange crabs have a longer carapace length than blue crabs by about 6.516mm.
+
+The difference here from the previous fit parameters is that we are accounting for colour and sex respectively when estimating sex and colour differences.
+
+sexmale:colourorange is the interaction between colour and sex in the change of mean carapace length, or in other words, it estimates how the difference in carpace length between males and females changes when comparing orange crabs to blue crabs.
+
+### Part iii.
+From the boxplot, we see the difference between male and female crabs carapace length is different for blue crabs (males are notably longer) compared to orange crabs (females are slightly longer), which suggests the effect of sex on carapace length is influenced by colour. Also, we see the median of the carapace lengths differ much more between colours in female crabs, and the overall differences in median in both sex and colour suggests an interaction term may help address the variations in the effect of sex across colour groups.
+
+From the output, we see the result for the (significance) test of no interaction between sex and colour is a p value of 1.031e-05 < 0.001 suggests very strong evidence against the null hypothesis. This suggests that there is significant interaction between sex and colour, or in other words, the effect of sex on carapace length does depend on colour, supporting the decision to include the interaction term in the model.

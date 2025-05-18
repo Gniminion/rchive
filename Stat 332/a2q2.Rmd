@@ -1,0 +1,51 @@
+---
+title: "Stat 332 A2 Inventory Analysis"
+output: pdf_document
+author: "MingMing Z. (21058539)"
+---
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(readr)
+```
+
+(a) To calculate the 95\% confidence interval for the total error, we follow $\hat{E} \pm c * se(\hat{E})$ where c = 1.96, and $\hat{E}$ is the estimated total error.
+
+```{r}
+# (a)
+# uses library readr to import data from txt file
+df <- read_delim("/Users/ming/Desktop/School/STAT 332/A2/inventory.txt", delim = "\t")
+# checking the data frame
+head(df)
+# separating error values of each strata
+erra <- df[df$stratum == "A", "error"]
+errb <- df[df$stratum == "B", "error"]
+errc <- df[df$stratum == "C", "error"]
+# calculating estimated total errors of the separate stratums
+tea <- 27 * mean(erra$error, na.rm = TRUE)
+teb <- 44 * mean(errb$error, na.rm = TRUE)
+tec <- 29 * mean(errc$error, na.rm = TRUE)
+# estimated total error:
+ehat <- tea + teb + tec
+ehat
+# error variance for each stratum:
+vara <- var(erra$error, na.rm = TRUE)
+varb <- var(errb$error, na.rm = TRUE)
+varc <- var(errc$error, na.rm = TRUE)
+# calculating the total error variance using population and sample proportions as weight
+vart <- (27/27) * vara + (2132/44) * varb + (1450/29) * varc
+se <- sqrt(vart) #se(ehat)
+se
+
+ehat + 1.96 * se
+ehat - 1.96 * se
+```
+So overall, we have [-2159.781, -893.6194] as the 95\% confidence interval for the total error.
+
+(b) We are using proportional allocation for B and C based on the population, which might not be the best if the variance in errors differs a lot between strata B and C. 
+```{r}
+vara
+varb
+varc
+```
+As we can see from the calculation, strata B has a way bigger variance than strata C, so we might consider a bigger sample for B to account for the bigger variance. An optimal allocation approach might be desirable.
+
+(c) We could create more stratas for the data points in B since the variability is quite high. C can remain a stand alone strata since the variance is relatively low compared to the other stratas. A should remain a stand alone strata even though the variance is high since there are only 27 in the population. So a different stratification would just be splitting B into more stratas.

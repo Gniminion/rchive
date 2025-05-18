@@ -1,0 +1,148 @@
+---
+title: "Assigment 4 - Question 1"
+author: "MingMing Z (21058539)"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(car)
+library(qqtest)
+```
+
+```{r}
+# set up
+load("EuroLifetimes.Rda")
+head(EuroLifetimes, n = 1)
+```
+
+## Part a:
+
+```{r}
+fit <- lm (lifetime2022 ~ lifetime2019, data = EuroLifetimes)
+summary(fit)
+```
+
+The corresponding p value for this hypothesis is 0.349 > 0.1, suggesting there is no evidence to reject $H_0: \beta_0 = 0$. So $\beta_0$ may not have that much of a significance in the model. 
+
+## Part b. 
+
+### Part i:
+
+$H_0: A \beta = c,$ where we are testing $H_0: \beta_0 = 0,  \beta_1 = 1$. The corresponding A matrix and vectors are:
+$$A = \begin{bmatrix}1 & 0 \\ 0 & 1 \end{bmatrix}$$
+$$\beta = \begin{bmatrix} \beta_0 \\ \beta_1 \end{bmatrix}$$
+$$c = \begin{bmatrix} 0 \\ 1 \end{bmatrix}$$
+### Part ii. 
+```{r}
+# following the same process from SAheart example
+# constraints
+k <- 2
+
+# A matrix
+A <- matrix(c(1, 0, 0, 1), nrow = 2, byrow = TRUE)
+
+#c vector
+c_vec <- c(0, 1)
+
+# estimated coefficients
+betahat <- coef(fit)
+
+# variance covariance matrix of beta
+VarHat <- vcov(fit)
+
+# calc d
+d <- t(A %*% betahat - c_vec) %*%  
+  solve(A %*% VarHat %*% t(A)) %*%  
+  (A %*% betahat - c_vec) / k
+
+# p val
+pval <- 1 - pf(d, 2, fit$df.residual)
+pval
+
+```
+the resulting p value is 8.484213e-12 < 0.01, so there is very strong evidence to reject the null hypothesis. This means that the assumption $\beta_0 = 0$ AND $\beta_1 = 1$ simultaneously is suprising. Since previously we found there was no evidence against $$ \beta_1 = 1$$ or $$H_0: \beta_0 = 0$$ separately, this suggests when we constrict both conditions simultaneously, the model is too limited compared to when we constrict these parameters separately.
+
+## Part c
+
+### Part i
+
+```{r}
+confint(fit, level = 0.99)
+```
+The 99% confidence intervals are $\beta_0: [-3.6665233, 1.747615], \beta_1: [0.9726815, 1.039636]$
+
+### Part ii:
+
+For confidence regions, consider a set, $S_{1-\alpha}$ of values for $\phi = A\beta$  defined as $S_{1-\alpha} = \{\boldsymbol{\phi} : D \leq q_{1-\alpha}\}$ where $\alpha = 0.01$, and the A matrix and parameter vector are what's defined in part b, so $\phi = \begin{bmatrix}1 & 0 \\ 0 & 1 \end{bmatrix} \begin{bmatrix} \beta_0 \\ \beta_1 \end{bmatrix}$
+
+$$q_{1-\alpha} $$ is chosen so that $$ P(F_{k, n-p} \leq q_{q-\alpha}) = 1-\alpha$$
+k is the number of constraints = 2, n-p = 56 degrees of freedom.
+
+The realised set $$s_{1-\alpha} =\{ \boldsymbol{\phi} : 
+\frac{(\boldsymbol{\hat{\phi}} - \boldsymbol{\phi})^T ( \hat{Var}(\tilde{\boldsymbol{\phi}}) )^{-1} (\boldsymbol{\hat{\phi}} - \boldsymbol{\phi})}{k} \leq q_{1-\alpha} 
+\}$$ is the confidence region for $\phi = A\beta$.
+
+Rearraging to express this in terms of $\boldsymbol{\beta}$, we have $$s_{1-\alpha} =\{ \boldsymbol{\beta} : 
+(\boldsymbol{\hat{\beta}} - \boldsymbol{\beta})^T ( \hat{Var}(\tilde{\boldsymbol{\beta}}) )^{-1} (\boldsymbol{\hat{\beta}} - \boldsymbol{\beta}) \leq q_{1-\alpha} 
+\}$$
+
+```{r}
+VarHat
+```
+
+$\boldsymbol{\hat{\beta}} = \begin{bmatrix} -0.95945 \\ 1.00616 \end{bmatrix}$ from fit summary, and $\hat{Var}(\tilde{\boldsymbol{\beta}} )= \begin{bmatrix} 1.0306508 & -0.0127296973 \\ -0.0127297 & 0.0001576198 \end{bmatrix}$
+
+$$q_{1-\alpha} $$ would be:
+
+```{r}
+qf(0.99, 2, 56)
+```
+
+### Part iii
+
+```{r}
+library("ellipse")
+# Get coordinates of the ellipse
+conf_region <- ellipse(fit,
+# which pair of parameters
+which = c(1, 2),
+# confidence level
+level = 0.99
+)
+xlim <- extendrange(conf_region[,1])
+ylim <- extendrange(conf_region[,2])
+plot(NA, xlim = xlim, ylim = ylim,
+xlab = expression(beta[0]),
+ylab = expression(beta[1]),
+main = "99% confidence region")
+
+# 99% confidence ellipse
+lines(conf_region, col = "firebrick", lty = 2, lwd = 2)
+
+# beta0, beta1 as an open circle
+points(coef(fit)[1], coef(fit)[2], col = "firebrick")
+
+# (0,1) as an 'x' in black
+points(0, 1, pch = 4, col = "black")
+
+# horizontal and vertical darkgrey lines
+abline(v = 0, col = "darkgrey")
+abline(h = 1, col = "darkgrey")
+
+# dashed horizontal lines of the 99% confidence interval for beta0, beta1
+abline(v=confint(fit, level = 0.99)[1,1], col="red", lty=2, lwd = 2)
+abline(v=confint(fit, level = 0.99)[1,2], col="red", lty=2, lwd = 2)
+abline(h=confint(fit, level = 0.99)[2,1], col="red", lty=2, lwd = 2)
+abline(h=confint(fit, level = 0.99)[2,2], col="red", lty=2, lwd = 2)
+
+```
+
+### Part iv
+
+Looking at the plot, the point (0,1) indicated by the cross is outside of the 99% confidence ellipse, albeit close. So we would say $\boldsymbol{\beta} = (0,1)^T$ is not plausible based on the confidence ellipse.
+
+## Part v.
+
+The confidence intervals $\beta_0: [-3.6665233, 1.747615], \beta_1: [0.9726815, 1.039636]$ includes the values 0 and 1, respectively. So the CI would support the plausibility of $\beta_0 = 0$ and $\beta_1 = 1$, disagreeing with the conclusion we came to in part iv. This is probably because the CI is calculated separately for the two parameters while the confidence ellipse looks at the joint trends of those two parameter. This is similar to the justification in part b, i. The confidence ellipse is more informative for looking at a joint model.

@@ -1,0 +1,19 @@
+---
+title: "Stat 331 Assignment 2 Part 1"
+output: pdf_document
+author: MingMing Z (21058539)
+header-includes:
+   - \usepackage{amsfonts,amsmath,amssymb,enumerate}
+---
+
+```{r}
+# (a)
+fit1 <- lm(y1 ~ x1, data = anscombe)
+summary(fit1)
+fit2 <- lm(y2 ~ x2, data = anscombe)
+summary(fit2)
+fit3 <- lm(y3 ~ x3, data = anscombe)
+summary(fit3)
+fit4 <- lm(y4 ~ x4, data = anscombe)
+summary(fit4)
+```

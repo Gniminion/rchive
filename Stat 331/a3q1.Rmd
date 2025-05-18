@@ -1,0 +1,117 @@
+---
+title: "Assignment 3 - Question 1"
+author: "MingMing Z (21058539)"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# set up
+load("groupedData.Rda")
+head(groupedData)
+model.matrix(~ x, data = groupedData)
+```
+
+## Part a:
+
+### Part i:
+
+```{r}
+model.matrix(~ 0 + x, data = groupedData)
+```
+mean of the ith response:
+$$ \mu_i = \beta_1 x_i$$
+vector of parameters
+$$ \theta^T = (\beta_1)$$
+
+### Part ii:
+
+```{r}
+model.matrix(~ -x, data = groupedData)
+```
+
+mean of the ith response:
+$$ \mu_i = \beta_0$$
+vector of parameters:
+$$ \theta^T = (\beta_0)$$
+
+### Part iii:
+
+```{r}
+model.matrix(~ group + x, data = groupedData)
+```
+
+mean of the ith response:
+$$ \mu_i = \beta_0+\beta_1 x_{i1}+\beta_2 x_{i2}$$
+vector of parameters:
+$$ \theta^T = (\beta_0, \beta_1, \beta_2)$$
+
+### Part iv:
+```{r}
+model.matrix(~ factor(group) + x, data = groupedData)
+```
+
+mean of the ith response:
+$$ \mu_i = \beta_0+\beta_1 x_{i1}+\beta_2 x_{i2}+\beta_3 x_{i3}$$
+vector of parameters:
+$$ \theta^T = (\beta_0, \beta_1, \beta_2, \beta_3)$$
+
+### Part v:
+
+```{r}
+model.matrix(~ 0 + factor(group) + x, data = groupedData)
+```
+mean of the ith response:
+$$ \mu_i = \beta_1 x_{i1}+\beta_2 x_{i2}+\beta_3 x_{i3}+\beta_4 x_{i4}$$
+vector of parameters:
+$$ \theta^T = (\beta_1, \beta_2, \beta_3, \beta_4)$$
+
+### Part vi:
+
+```{r}
+model.matrix(~ factor(group) * x, data = groupedData)
+```
+mean of the ith response:
+$$ \mu_i = \beta_0 + \beta_1 x_{i1}+\beta_2 x_{i2}+\beta_3 x_{i3}+\beta_4 x_{i3}x_{i4} + \beta_5 x_{i3}x_{i5}$$
+vector of parameters:
+$$ \theta^T = (\beta_0, \beta_1, \beta_2, \beta_3, \beta_4, \beta_5)$$
+
+### Part vii:
+
+```{r}
+model.matrix(~ group/year, data = groupedData)
+```
+
+mean of the ith response:
+$$ \mu_i = \beta_0+\beta_1 x_{i1}+\beta_2 x_{i1}x_{i2}$$
+vector of parameters:
+$$ \theta^T = (\beta_0, \beta_1, \beta_2)$$
+\newpage
+
+## Part b:
+
+Let straight line 1 be $$\mu_i = \beta_0+ \beta_1 x_i, \ i \leq m$$ and line 2 be $$\mu_i = \alpha_0+ \alpha_1 x_i, \ m< i<n$$.
+They intersect when $x=a$ so $$\beta_0+ \beta_1 a = \alpha_0+ \alpha_1 a \implies \text{line 2 passes through }(a, \beta_1+\beta_2a)$$
+So on a graph, line 1 would be shown for the first m observations and line 2 would continue after the intersection at $x=a$. Define a parameter $\beta_2$ that represents the change in slope following the first line after $x=a$. Then $$\alpha_0+ \alpha_1 x_i = \beta_0+ \beta_1a + \beta_2 (x_i-a), \ m<i<n$$
+
+So overall, the model would be $$\mu_i = \beta_0+ \beta_1 x_i \text{ , when } i \leq m, \\ \beta_0+ \beta_1a + \beta_2 (x_i-a) \text{ , when } m < i < n$$
+
+Vector of parameters:
+$$ \theta^T = (\beta_0, \beta_1, \beta_2)$$
+The model matrix would have n rows, and we can split it into the first m rows and the rest m-n rows, so
+$$
+X =
+\begin{bmatrix}
+1 & x_1 & 0 \\
+1 & x_2 & 0 \\
+\vdots & \vdots & \vdots \\
+1 & x_m & 0 \\
+1 & a & x_{m+1} - a \\
+\vdots & \vdots & \vdots \\
+1 & a & x_n - a
+\end{bmatrix}
+$$
+We can see that there is a change in pattern after $x_m$ that corresponds to the model we defined above.

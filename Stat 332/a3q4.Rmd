@@ -1,0 +1,86 @@
+---
+title: "Stat 332 A3 Balloons Analysis"
+output: pdf_document
+author: "MingMing Z. (21058539)"
+---
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(readr)
+library(ggplot2)
+```
+
+```{r}
+#(a)
+# uses library readr to import data from txt file
+df <- read_delim("balloon_data.txt", delim = "\t")
+head(df)
+```
+
+(a) It seems to be a complete randomized experiment with balloons as the units and colors as the treatments. Mariah is comparing the inflation times of balloons from four different color groups by recording the trials in RANDOM ORDER, evidenced by the COLOR column in the dataset (no order pattern).
+
+```{r}
+# (b)
+df$COLOR <- as.factor(df$COLOR) # factor by color categories
+# 1,2,3,4 denote the colors pink, yellow, orange, blue, respectively
+boxplot(TIME ~ COLOR, data=df, main = "Balloon color and inflation time relationship", 
+        col = c("pink", "yellow", "orange", "blue"),
+        xlab = "color (1 = pink, = yellow, 3 = orange, 4 = blue)", 
+        ylab = "time (seconds)", xlim = c(0, 5), ylim = c(10, 30))
+```
+
+```{r}
+# (c)
+# we have one explainatory and response variable, so we use one way ANOVA
+mod <- lm (TIME ~ COLOR, data=df)
+summary(mod)
+aov(mod)
+```
+The resulting overall F test p-value is 0.01836 < 0.05, meaning there is evidence to reject the null hypothesis that balloon color does not have an effect on inflation time. So, we can say that at least one color differs in inflation time compared to the other colors.
+
+In fact, if we look at parameter interactions, COLOR2 and COLOR3 have a small p-value (<0.05) that suggests yellow and orange balloons have statistically significant higher inflation time compared to pink balloons, while COLOR4 have a large p-value (>0.1) that suggests no evidence against the null hypothesis that blue balloons differ from the baseline inflation time of pink balloons.
+
+```{r}
+# (d)
+table(df$COLOR)
+mean(df$TIME[df$COLOR == 1]) #pink
+mean(df$TIME[df$COLOR == 2]) #yellow
+mean(df$TIME[df$COLOR == 3]) #orange
+mean(df$TIME[df$COLOR == 4]) #blue
+```
+Yellow balloons have the highest mean inflation time with 22.575 seconds on average.
+
+
+(e) Let's define a contrast of $\tau_2 - (\tau_1+\tau_3+\tau_4) / 3$ where tau 1,2,3,4 corresponds to the mean of pink, yellow, orange, and blue balloons respectively. So we are testing the null hypothesis that yellow balloons DOES NOT take longer than the other colors $$ H_0: \theta = 0$$ with alternative hypothesis yellow balloons does take longer to inflate than the other three colors: $$H_A: \theta > 0$$. This is a one tailed test.
+
+$$ \hat{\theta} =  22.575 - (18.3375+21.875+18.1875) / 3 = 22.575 - 19.467 = 3.108$$
+\newline And the standard error: $$SE(\tilde{\theta}) = \hat{\sigma}\sqrt{\frac{1}{n_1} + \frac{1}{n_2} + \frac{1}{n_3} + \frac{1}{n_4}} = \hat{\sigma}\sqrt{\frac{1}{8} + \frac{1}{8} + \frac{1}{8} + \frac{1}{8}} = \hat{\sigma}\sqrt{ \frac{1}{2}}$$
+\newline We can estimate sigma using the previous ANOVA output which is 3.2873
+
+So $d = \frac{3.108 - 0}{3.2873 \sqrt{\frac{1}{2}}} = 1.337$ and $p = Pr(t_{28} \geq 1.337)$
+
+The one tailed critical t value for a 0.05 significance level with 28 df is approximately 1.701 on the t table, and $1.337 < 1.701$ so we can conclude that the p value is $>0.05$ so we don't have sufficient evidence against the null hypothesis at a 0.05 significance level.
+
+```{r}
+# as an extra, here's the actual p value:
+1 - pt(1.337, df = 28)
+# which is actually <0.1, so maybe there is weak evidence against null hypothesis,
+# but not for our chosen significance level
+```
+
+Overall, we cannot conclude that yellow balloons take longer to inflate than the other three colors. 
+
+
+
+```{r}
+# (f)
+plot(df$ORDER, df$TIME,  main = "Inflation time in sequential order", pch = 19, 
+     xlab = "data collection order", ylab = "time (seconds)",
+     col = c("pink", "yellow", "orange", "blue")[df$COLOR], 
+     xlim = c(0, 35), ylim = c(10, 30)) 
+
+# add a fitted line for interpretation
+line <- lm(TIME ~ ORDER, data = df)
+abline(line) 
+
+```
+
+Looking at this plot, we see a negative trend as the inflation time gets shorter as more trials are done. This might suggest that the balloons are becoming easier to inflate due to the experimenter getting the hang of it over time. Since the color of the balloons are randomly selected, this factor might not concern model assumptions since all colors are randomly scattered during the duration of the experiment.

@@ -1,0 +1,68 @@
+---
+title: "Stat 331 Assignment 1 R Analysis"
+output: pdf_document
+author: MingMing Z (21058539)
+---
+
+```{r}
+# (a)
+load("crabs.Rda")
+width <- crabs$width
+length <- crabs$length
+plot(length ~ width, data=crabs, main = "Length and Width Relationship of Crabs", 
+     xlab = "Width", ylab = "Length")
+```
+The appearance of the scatter plot (straight line) suggests a strong positive linear relationship between width (explanatory variate) and length (response variate). 
+
+
+```{r}
+# Extra analysis:
+cor(width, length)
+```
+The correlation coefficient, 0.995, which is very close to 1, suggests a strong positive linear relationship in support of the scatter plot observation.
+
+(b)
+i. The pattern of the scatter plot does fall in line with a straight line model (relationship of width and length seems linear).
+ii. \(\beta_0\) represents the mean value of the length in the study population of crabs for whom the width is zero. It does not make sense to interpret this parameter since an actual crab would never have a width of zero.
+iii. \(\beta_1\) represents the increase in the mean value of the of the length in the study population of crabs for every one unit increase in the value of the width of a crab.
+iv. \(\sigma\) is the variability in the length of the crabs in the study population, and should not vary with width based on linear model assumptions. 
+
+
+
+
+```{r}
+# (c)
+fit <- lm(length ~ width)
+summary(fit)
+```
+The resulting estimates are (rounded to 4 s.f.): 
+\(\\\hat{\beta_0} = -0.6619
+\\\hat{\beta_1} = 0.8998
+\\\hat{\sigma^2} = (0.7112)^2\) 
+
+\newpage
+```{r}
+# (d)
+plot(length ~ width, data=crabs, main = "Length and Width Relationship of Crabs", 
+     xlab = "Width", ylab = "Length", xlim = c(0, 60), ylim = c(0, 50))
+abline(fit, col = "red", lwd = 2)
+abline(v = mean(width), col = "blue", lwd = 2, lty = 2)
+
+# mean width and height:
+mean(width)
+mean(length)
+```
+(e) Overall, the parameterisation is appropriate as our data follows a linear pattern and the fitted line does accurately overlay our scatter plot.
+To elaborate, \(\beta_1, \beta_2\) are model parameters that makes up our linear model. In the context of crabs data, \(\beta_0\) by itself is not meaningful as it is a negative value that could not exist in nature (no crabs have negative length). However, when combined with \(\beta_1\) to form \(\mu(x) = \beta_0 + \beta_1 x\), it has a proper interpretation of the expected/mean response of crab length when x is some width value. For instance, \(-0.6619 + 0.9998 (mean width = 36.416) = 35.745 \approx mean height = 32.106\), which we can also estimate from our plot. 
+
+\newpage
+```{r}
+# (f)
+plot(width, fit$residuals,  main = "Residuals vs. Width", xlab = "Width", 
+     ylab = "Residuals", xlim = c(0, 60), ylim = c(-2, 2))
+abline(h = 0, lty = 2, col = "red", lwd = 2)
+```
+In addition to the residuals plot, I added a red dashed line at y = 0 to help with interpretation.
+
+i. Points seems to be scattered relatively randomly with more residual variability the larger the width (more spread out with larger width values than smaller). 
+ii. The shape may suggest a non-constant variance of residuals, which may violate the homoscedasticity assumption of a linear model. What we wanted to see is the spread of residuals being consistent across the range of width, which is not apparent here.

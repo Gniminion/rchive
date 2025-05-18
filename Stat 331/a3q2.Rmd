@@ -1,0 +1,141 @@
+---
+title: "Assignment 3 - Question 2"
+author: "MingMing Z (21058539)"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+```
+
+```{r}
+# set up
+ratings <- read.table("filmRatings.txt", sep="", header = TRUE)
+head(ratings)
+len <- ratings$Length
+year <- ratings$Year
+rate <- ratings$Rating
+```
+
+## Part a:
+
+```{r}
+plot(len ~ year, data=ratings, main = "Length and year relationship in filmRatings dataset", 
+     xlab = "year", ylab = "length", xlim = c(1920, 2000), ylim = c(0, 150))
+cor(year, len)
+```
+The correlation coefficient of 0.509 suggests some sense of positive relationship between the length and year varieties. So the length of movies may have increased as the years increased, which makes sense because movies might have gotten more resources and funding as the years went by, allowing longer movies to be made. So factors like funding may be considered confounding variables here.
+
+
+## Part b:
+
+```{r}
+plot(rate ~ len, data=ratings, main = "Rating and length relationship in filmRatings dataset", 
+     xlab = "length", ylab = "rating", xlim = c(0, 150), ylim = c(0, 5))
+cor(len, rate)
+```
+The correlation coefficient of 0.318 suggests a slight positive relationship between the length and rating varieties. So the rating of movies may have increased as the length of movies increased, which may be because it is hard to tell a cohesive story in a short time, or some sense of sunk cost fallacy that makes viewers want to rate something they committed their time to higher. Note the outlier data point where the length <50 but rating = 4 that may have influenced the correlation result.
+
+
+## Part c:
+
+We shouldn't assume correlation of these two varietes (year, ratings) without directly comparing these two. Just because year is moderately correlated with length, and length is slighty correlated with rating, does NOT mean that year is correlated with rating. Since cor(len, rate) = 0.318 is quite weak, the indirect correlation from year to length to rating would be even less significant. We should also consider confounding variables that may influence recent movies and ratings as well when determining the true relationship.
+
+## Part d:
+
+```{r}
+plot(rate ~ year, data=ratings, main = "Rating and year relationship in filmRatings dataset", 
+     xlab = "year", ylab = "rating", xlim = c(1920, 2000), ylim = c(0, 5))
+cor(year, rate)
+```
+The correlation coefficient of -0.148 suggests a very very slight negative relationship between the length and rating varieties. More recent movies may have slightly lower ratings, but the effect is weak. It seems that length may be more related to rating than year.
+
+## Part e:
+```{r}
+ratings$Length_Category <- "long"
+ratings$Length_Category[ratings$Length < 90] <- "short"
+ratings$Length_Category <- factor(ratings$Length_Category, levels = c("short", "long"))
+pch_vals <- c("short" = 1, "long" = 19) # setting short to open cirles and long to closed
+
+plot(year, rate, pch = pch_vals[ratings$Length_Category],
+     main = "Rating and year relationship in filmRatings with length distinctions",
+     xlab = "year", ylab = "rating", xlim = c(1920, 2000), ylim = c(0, 5))
+
+legend("topright", legend = c("short (<90 min)", "long (>=90 min)"), pch = c(1, 19))
+```
+If we look at the trends, it seems that generally, more recent and higher rated movies seems to be longer, while shorter movies cluster around the older and lower ratings side. We can infer that length of movies are more related to the year and ratings than the relationship between year and rating itself, which aligns with the previous analysis.
+
+## Part f:
+
+### Part i:
+
+Rating as the response variate and year as the explanatory variate implies $\beta_0$ is the mean rating when the year is 0. This parameter (intercept) is not insightful or meaningful in context of the study since no movies existed at that time. $\beta_1$ is the mean change in rating for each one unit (year) increase in, well, year. 
+
+### Part ii:
+
+```{r}
+fit <- lm(rate ~ year)
+summary(fit)
+```
+Based on the model fit, we have $$\beta_0 + \beta_1 x = 13.525-0.00570 x $$ So for each additional year, the rating decreases by 0.0057 points on average. Checking the p value, we see p-value for $H_0: \beta_1 = 0$ = 0.1429 (>0.1), suggesting year increase may not be a significant predictor of rating increase. Also, the r squared value implies only 2.18\% of the variation in movie ratings is explained by the year, suggesting year alone does not explain ratings well. The F test returns a p value > 0.1, supporting the idea that this model may not be significant overall.
+
+## Part g:
+
+### Part i:
+
+$\beta_0:$ mean rating when both the year and length is 0 (not very meaningful in context)
+$\\\beta_1:$ mean change in rating for each one year increase, after accounting for length (when length is constant)
+$\\\beta_2:$ mean change in rating for each one minute increase in length, after accounting for year (when year is constant)
+
+### Part ii:
+
+```{r}
+fit2 <- lm(rate ~ year + len)
+summary(fit2)
+```
+
+We have: $$32.148 - 0.0161 x_1 + 0.0204 x_2$$ With low p values (p < 0.05) for all hypothesis tests of $H_0: parameter = 0$. This suggests all $B_0, B_1, B_2$ parameters are significant to the fit. Interpreting the r squared value, this model explains about 23.1\% of the variation in ratings, which isn't high but much better than the previous fit, suggesting that year and length together have some predictive power for movie ratings. The F test returns a very small p suggesting the model is significant, supporting the idea that at least one of the explanatory variables (year or length) is meaningfully related to movie ratings.
+
+## Part h:
+
+### Part i:
+``` {r}
+nrow(ratings) # 100 movies total
+sum(len < 90) # 42 short movies 
+sum(len >= 90) # 58 long movies 
+
+sum(len < 90 & year <= 1965 & rate <= 2.5) # old short bad count (29)
+sum(len < 90 & year <= 1965 & rate >= 3) # old short good count (6)
+sum(len >= 90 & year >= 1966 & rate <= 2.5) # new long bad count (27)
+sum(len >= 90 & year >= 1966 & rate >= 3) # new long good count (16)
+
+sum(year >= 1966 & rate >= 3) # new all good count (16)
+sum(year <= 1965 & rate <= 2.5) # old all bad count (35)
+
+# note that the table is in a different format 
+# (could not figure out how to typeset it in the original format sorry)
+table <- data.frame(
+  category = c("new short", "old short", "new long", "old long", "new all", "old all"),
+  bad = c(7, 29, 27, 6, 34, 35),
+  good = c(0, 6, 16, 9, 16, 15),
+  good_percent = c("0%", "17.14%", "37.21%", "60%", "32%", "30%")
+)
+kable(table)
+```
+
+### Part ii:
+All new movies have 32% good movies
+All old movies have 30% good movies
+For all movies, the percentage of good movies for new movies is slightly higher than the percentage for old movies. There seems to be a preference for new movies if we infer from this alone. The difference is quite small though so overall there seems to be around ~30% good movies.
+
+### Part iii:
+New short movies have 0% good movies
+Old short movies have 17.14% good movies
+Older short movies seem to be preferred than newer short movies.
+
+New long movies have 37.21% good ratings.
+Old long movies have 60% good ratings.
+Older long movies seem to be preferred than newer long movies.
+
+When controlling movie length, the trends suggest a preference for old movies, which slightly contradict the preference when inferring from all movies - this is truly a "Paradoxes in Film Ratings". Perhaps long movies in the past may have been rated more favorably compared to long movies today. We should look into the data more and check other variables to determine the cause of these underlying trends.

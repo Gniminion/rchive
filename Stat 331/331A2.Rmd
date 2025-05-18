@@ -1,0 +1,67 @@
+---
+title: "Stat 331 Assignment 2 Part 1"
+output: pdf_document
+author: MingMing Z (21058539)
+header-includes:
+   - \usepackage{amsfonts,amsmath,amssymb,enumerate}
+---
+
+```{r}
+# (a)
+fit1 <- lm(y1 ~ x1, data = anscombe)
+summary(fit1)
+fit2 <- lm(y2 ~ x2, data = anscombe)
+summary(fit2)
+fit3 <- lm(y3 ~ x3, data = anscombe)
+summary(fit3)
+fit4 <- lm(y4 ~ x4, data = anscombe)
+summary(fit4)
+```
+
+(b) For fit1, we see $\hat{\beta}_0 = 3.0001$ , estimated sd for $\hat{\beta}_0 = 1.1247$ , p-val for $\hat{\beta}_0 = 0.02573$ 
+$\\ \hat{\beta}_1 = 0.5001$ , estimated sd for $\hat{\beta}_1 =  0.1179$ , p-val for $\hat{\beta}_1 = 0.00217$ 
+\newline Multiple R-squared statistic = 0.6665, Residual standard error = 1.237 on 9 degrees of freedom
+\newline
+\newline For fit2, we see $\hat{\beta}_0 = 3.001$ , estimated sd for $\hat{\beta}_0 = 1.125$ , p-val for $\hat{\beta}_0 = 0.02576$ 
+$\\ \hat{\beta}_1 = 0.500$ , estimated sd for $\hat{\beta}_1 =  0.118$ , p-val for $\hat{\beta}_1 = 0.00218$
+\newline Multiple R-squared statistic = 0.6662, Residual standard error = 1.237 on 9 degrees of freedom
+\newline
+\newline For fit3, we see $\hat{\beta}_0 = 3.0025$ , estimated sd for $\hat{\beta}_0 = 1.125$ , p-val for $\hat{\beta}_0 = 0.02562$
+$\\ \hat{\beta}_1 = 0.4997$ , estimated sd for $\hat{\beta}_1 =  0.1179$ , p-val for $\hat{\beta}_1 = 0.00218$
+\newline Multiple R-squared statistic = 0.6663, Residual standard error = 1.236 on 9 degrees of freedom
+\newline
+\newline For fit4, we see $\hat{\beta}_0 = 3.0017$ , estimated sd for $\hat{\beta}_0 = 1.1239$ , p-val for $\hat{\beta}_0 = 0.02559$  
+$\hat{\beta}_1 = 0.4999$ , estimated sd for $\hat{\beta}_1 =  0.1178$ , p-val for $\hat{\beta}_1 = 0.00216$
+\newline Multiple R-squared statistic = 0.6667, Residual standard error = 1.236 on 9 degrees of freedom
+
+All models show very similar estimates, suggesting that the relationship between the response and explanatory variables is quite consistent across these four datasets. The consistent p-value of <0.05 suggests significant evidence against the null hypothesis for both $\hat{\beta}_0 = 0$ and $\hat{\beta}_1 = 0$. The ~0.67 R squared statstic tells us that for all four models, approximately 67% of the variation in the response variable y can be explained by variable x, so the goodness of fit may be similar (we see later this is not the case though). The residual standard error is also almost identical across the four models, indicating similar model precision (overestimate).
+
+
+
+```{r}
+# (c)
+plot(y1 ~ x1, data=anscombe, main = "x1 and y1 relationship in anscombe dataset", 
+     xlab = "x1", ylab = "y1", xlim = c(0, 15), ylim = c(0, 10))
+abline(fit1, col = "red", lwd = 2)
+```
+\newpage
+```{r}
+plot(y2 ~ x2, data=anscombe, main = "x2 and y2 relationship in anscombe dataset", 
+     xlab = "x2", ylab = "y2", xlim = c(0, 15), ylim = c(0, 10))
+abline(fit2, col = "red", lwd = 2)
+plot(y3 ~ x3, data=anscombe, main = "x3 and y3 relationship in anscombe dataset", 
+     xlab = "x3", ylab = "y3", xlim = c(0, 15), ylim = c(0, 10))
+abline(fit3, col = "red", lwd = 2)
+plot(y4 ~ x4, data=anscombe, main = "x4 and y4 relationship in anscombe dataset", 
+     xlab = "x4", ylab = "y4", xlim = c(0, 15), ylim = c(0, 10))
+abline(fit4, col = "red", lwd = 2)
+```
+(d) For fit1, the least squares line is reasonable since the data points lie approximately on a straight line (linear). So it shows a clear relationship and make sense for its corresponding observed data.
+\newline
+\newline For fit2, the points lie on a curved, almost quadratic-like trend. The linear least squares line might capture the general trend of the data but will not properly reflect the shape of the curve, especially for extreme points where the data points deviate significantly from the line. A quadratic model may be more effective, so the current model does not really make sense its corresponding observed data.
+\newline
+\newline For fit3, the data points follow a linear trend, but it deviates in the increase in slope from the fitted line. The least squares line fits relatively well for most points but the rightmost data point may be a outlier here. Maybe we can slightly "bump" points higher on the y-axis and apply the power transformation. Overall, the model might make sense for the corresponding observed data but can definitely be optimised further.
+\newline
+\newline For fit4, the data points lie on a vertical line and is non-linear, so the least squares line is inappropriate here. The relationship between the variables is unclear so it would not make sense for the observed data we have.
+
+(e) If we look at the R summary output and the plots, we can see that the statistical analysis does not provide a full picture of how well the model fits the data, especially when issues like data trends and non-linearity are present. In our R output, we see the analysis is similar for all 4 models, but we can only visualise the differences and model fit with the plots. Additionally, calculating metrics like R squared and p-values assume things like linearity and normality, which we cannot infer without considering the context behind the dataset and performing other analysis like residual and Q-Q plots. Outliers and noise can also influence the resulting statstical metrics, which can prevent us from coming to the right conclusion about model fit.

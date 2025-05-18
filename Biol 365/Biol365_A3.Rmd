@@ -1,0 +1,119 @@
+---
+title: "Biol365 Assignment 3"
+output: pdf_document
+author: "MingMing Z. (21058539)"
+---
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(DECIPHER)
+library(msa)
+library(phangorn)
+```
+
+```{r}
+# setting up
+Pinniped1_data <- readDNAStringSet("Pinnipeds_initdata.txt")
+Pinniped1_msa <- msa(Pinniped1_data)
+Pinniped1_phyDat <- as.phyDat(Pinniped1_msa, format = "fasta", type = "AA")
+print(Pinniped1_phyDat)
+```
+
+```{r, fig.height = 4}
+# initial NJ tree based on Pinniped_initdata.txt
+# names are spliced to better show branch points
+# (cex 0.7 yields unclear branch length because of long names)
+Pinniped1_dm <- dist.ml(Pinniped1_phyDat)
+Pinniped1_tree <- NJ(Pinniped1_dm)
+plot.phylo(Pinniped1_tree, cex = 1.0, main = "NJ Tree based on Pinniped_initdata.txt")
+
+```
+Terrestrial species closely related to manatees: under Afrotheria (superorder), we have elephants and tenrecs
+Two non-mammalian outgroup species: frogs (Amphibia) and kiwis (Aves)
+
+``` {r}
+# table linking the FASTA file to genomic locations
+data <- data.frame(
+  Name = c("Harbor_Seal", "Caspian_Seal", "Harp_Seal", "Leopard_Seal", "S_Elephant_Seal", 
+              "Crabeater_Seal", "N_Fur_Seal", "SA_Fur_Seal", "Walrus", "House_Cat", 
+              "Dog", "Aus_Sea_Lion", "Cali_Sea_Lion", "Florida_Manatee", "Dugong (Sea Cow)", 
+              "Asiatic_Elephant", "Aardvark", "Axolotl", "Great_Spotted_Kiwi"),
+  Accession = c("NC_001325.1", "NC_008431.1", "NC_008429.1", 
+                "NC_008425.1", "NC_008422.1", "NC_008423.1", 
+                "NC_008415.3", "NC_063561.1", "NC_004029.2", 
+                "NC_001700.1", "NC_002008.4", "NC_008419.1", 
+                "NC_008416.1", "NC_010302.1", "NC_003314.1", 
+                "NC_005129.2", "NC_002078.1", "NC_005797.1", "NC_002782.2"),
+  Range = c("6275-7819", "5344-6888", "5341-6885", "5351-6895", "5353-6897", "5352-6896", 
+            "5352-6896", "5354-6898", "5350-6894", "6216-7760", "5349-6893", "5360-6904", 
+            "5358-6902", "5336-6877", "5327-6868", "5329-6879", "5332-6879", "5310-6857", "5385-6935")
+)
+data
+```
+
+``` {r}
+# setting up new data
+Pinniped2_data <- readDNAStringSet("Pinnipeds_newdata.txt")
+Pinniped2_msa <- msa(Pinniped2_data)
+```
+
+```{r}
+# new msa
+Pinniped2_msa
+Pinniped2_phyDat <- as.phyDat(Pinniped2_msa, format = "fasta", type = "AA")
+print(Pinniped2_phyDat)
+
+sink (file = "new_msa_output.txt")
+print(Pinniped2_msa, show="complete")
+sink ()
+```
+
+```{r, fig.width= 10, fig.height=8}
+# new NJ including additional sequences (extra)
+Pinniped2_dm <- dist.ml(Pinniped2_phyDat)
+Pinniped2_tree <- NJ(Pinniped2_dm)
+plot.phylo(Pinniped2_tree, cex = 0.8, main = "NJ Tree with additional sequences and renaming")
+```
+
+```{r}
+# max likelihood analysis
+mt <- modelTest(Pinniped2_phyDat, model = c("JC", "F81", "K80", "HKY", "SYM", "GTR"))
+```
+
+```{r echo=T, results='hide'}
+# evaluating best model
+env = attr(mt, "env")
+bestmodel <- mt$Model[which.min(mt$BIC)]
+fitStart <- eval(get(bestmodel, env), env)
+fit <- optim.pml(fitStart, rearrangement = "stochastic", optGamma=TRUE, optInv=TRUE, bestmodel)
+```
+```{r}
+fit
+```
+
+```{r echo=T, results='hide'}
+# bootstrapping and tree plotting
+bs <- bootstrap.pml(fit, bs=100, optNni=TRUE)
+```
+``` {r fig.height = 8, fig.width = 11}
+plotBS(midpoint(fit$tree), bs, p = 50, type="p", cex = 0.8, 
+       main = "ML phylogenetic tree with additional sequences and bootstrapping")
+```
+
+What is the best fit evolutionary model based on the AICc? Ans: HKY+G(4)+I 
+\newline Are most branches in your tree well supported? Are there any exceptions? All bootstrap values are >70% (common threshold) EXCEPT the branch separating aardvarks with 61. This implies this particular branch may not be as well supported.
+
+Qs:
+
+A) Following the separate clades, we can infer that marine adaptation is a multiple event, since manatees and dugongs seems to evolve independently from seals. So manatees likely evolved from common terrestrial ancestors related to elephants while seals likely shared common terrestrial ancestors with cats and dogs. So no, manatees did not share a common evolutionary origin with seals.
+
+B) All three species seem to be contained in a single clade with bootstrap value 91, with a common ancestor indicated by a common node, so caspian seal, harbor seal, and harp seals are a monophyletic group.
+
+C) N Fur seals and SA Fur seals seem to share a common ancestor, but sea lions are also more closely related to SA Fur seals rather than N Fur seals. It is likely that the group is paraphyletic rather than monophyletic.
+
+D) Walruses share a common ancestor with the sea lion and fur seals, but separated by node. This implies a distinct group of organisms.
+
+E) My tree does seem largely consistent with Arnason 2006, with similar groupings of sea lions, fur seals, and walrus, as well as outgroup representation of cats and dogs. There are more species of seals included in Arnason 2006 and here we included manatees but similar chosen species have the same pattern. 
+
+F) The low bootstrap value at the node with the aardvarks might be a uncertain result, and the 100% values may by overestimating results confidence. We can improve this tree by referencing Arnason 2006's tree and include more taxons for both the seals and the manatees/sea cows.
+
+G) Walrus divergence from closest relatives: given the (half) distance, it likely diverged ~30 million years ago from seals.
+Manatee divergence from closest relatives : diverged ~20 million years ago from common ansector with dugongs, but since it clusters with elephants, the split from terrestrial ancestors likely occurred ~60 million years ago.

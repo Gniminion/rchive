@@ -1,0 +1,108 @@
+---
+title: "Stat 332 A4 Cookies"
+output: pdf_document
+author: "MingMing Z. (21058539)"
+---
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(readr)
+library(ggplot2)
+```
+
+```{r}
+# (a)
+# uses library readr to import data from txt file
+df <- read_delim("cookie_student.txt", delim = ",", show_col_types = FALSE)
+# checking the data frame
+# head(df)
+
+# boxplot
+boxplot(rating ~ color, data = df, col = c("blue","green", "gray", "pink"), 
+        xlab = "treatment (by food coloring)", main = "Cookie boxplots by treatment")
+```
+
+```{r}
+# (b)
+# extract factors:
+df$sugamt <- "normal"
+df$sugamt[df$color %in% c("blue", "green")] <- "low"
+df$sugtype <- "normal"
+df$sugtype[df$color %in% c("pink", "green")] <- "brown"
+
+# factor (block by) students
+df$id <- factor(df$id)
+
+# anova table
+mod1 <- aov(rating ~ sugamt + sugtype + id, data = df)
+summary(mod1)
+```
+
+For sugar amount (low/normal), we can see that the p value > 0.1, meaning there is no significant difference in mean ratings between using low and normal sugar amounts. For sugar type (normal /brown ), we can see that the p value > 0.1, meaning there is no significant difference in mean ratings between using normal and brown sugar types. For blocking variable (student), we can see that the p value > 0.1, meaning there is no significant difference between the ratings of students, so blocking by student might not have made a difference.
+
+```{r}
+# (c)
+# https://www.geeksforgeeks.org/how-to-create-interaction-plot-in-r/
+interaction.plot(
+  x.factor = df$sugamt, trace.factor = df$sugtype, response = df$rating,
+  xlab = "sugar amount", 
+  ylab = "mean rating",
+  trace.label = "sugar type"
+)
+```
+
+From the interaction plot, we can see students prefer brown sugar with a normal amount while for normal sugar, a low amount. This suggests a negative interaction where the effect of sugar amount depends on the sugar type.
+
+``` {r}
+# (d)
+nnmean <- mean(df$rating[df$color == "nocolor"])  # normal amt, normal sugar
+lnmean <- mean(df$rating[df$color == "blue"]) # low amt, normal sugar
+nbmean <- mean(df$rating[df$color == "pink"]) # normal amt, brown sugar
+lbmean <- mean(df$rating[df$color == "green"]) # low amt, brown sugar
+nnmean
+nbmean
+lnmean
+lbmean
+# contrast
+(nnmean - lnmean) - (nbmean - lbmean) 
+```
+
+We have the means: 6.70, 7.14, 7.24, 6.55 for normal/normal, low/normal, normal/brown, low/brown respectively. Assigning $\tau_{2,2}, \tau_{2,1}, \tau_{1,2}, \tau_{1,1}$ to each of the treatments (order doesn't really matter) and finding a contrast we have $\hat{\theta}= (6.702703 - 7.135135) - (7.243243 - 6.554054) = (-0.432432) - (0.689189) = -1.121621$. This is a negative contrast as expected.
+
+$Var(\hat{\theta}) = \sigma^2(\frac{1}{37} + \frac{1}{37} + \frac{1}{37} + \frac{1}{37})$
+
+$d = \frac{|\hat{\theta} - 0|}{\hat{\sigma} \sqrt{\frac{4}{37}}}$
+
+Where $\hat{\sigma}^2$ can be found with the residual MS from previous anova = 2.785
+
+``` {r}
+se <- sqrt(2.785 * (4/37)) 
+d <- -1.121621/se
+d
+# this part can also be done by referring to the t distribution table with 0.05
+# but i couldn't find a table where there's a row for df = 109, so i used r here for better accuracy
+# just note that i did attempt it by hand: for 100 df crit val is 1.984 
+# so the conclusion where 2.044111 > 1.984 => significance at 0.05 stays the same
+pval <- 2 * pt(d, df=109) # degree of freedom is also found with prev anova table
+pval
+```
+p value is $Pr(|t_{109}| \geq 2.044111) = 0.04335298 < 0.05$, so we can say we have significant evidence against the null hypothesis, therefore we can say there is significant evidence to support a negative interaction where brown sugar is more sensitive to better ratings when its amount is low. 
+
+
+(e) If food colors were not randomized, there could be bias in the ratings where perception of colors played a role. Pink and blue could be higher rated than green and no color since those two colors are associated with pleasant / playful dessert colors while no color can be percieved as boring and green can be associated with gross things like vomit. So the interpretation of the interactions can be associated with color likeability instead of the actual factors.
+
+```{r}
+# Given data
+fa <- 0.0365
+dfa <- 1
+dferr <- 12
+
+fb <- 4.017
+dfb <- 2
+
+finter <- 3.158
+dfinter <- 2
+
+pf(fa, dfa, dferr, lower.tail = FALSE)
+pf(fb, dfb, dferr, lower.tail = FALSE)
+pf(finter, dfinter, dferr, lower.tail = FALSE)
+
+```
